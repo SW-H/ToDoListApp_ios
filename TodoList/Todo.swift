@@ -51,20 +51,20 @@ class TodoManager {
         // delete 로직 추가
         
         // (1)
-//        todos = todos.filter { existingTodo in
-//            return existingTodo.id != todo.id
-//        }
+        todos = todos.filter { existingTodo in
+            return existingTodo.id != todo.id
+        }
         
         // (2)
         // 해당 인덱스를 찾음
-        if let index = todos.firstIndex(of: todo){
-            todos.remove(at: index)
-        }
+//        if let index = todos.firstIndex(of: todo){
+//            todos.remove(at: index)
+//        }
         saveTodo()
     }
     
     func updateTodo(_ todo: Todo) {
-        //TODO: update 로직 추가
+        //update 로직 추가
         guard let index = todos.firstIndex(of: todo) else {return}
         todos[index].update(isDone: todo.isDone, detail: todo.detail, isToday: todo.isToday)
         saveTodo()
