@@ -1,13 +1,6 @@
-//
-//  Storage.swift
-//  storeJSON
-//
-//  Created by joonwon lee on 2020/03/17.
-//  Copyright © 2020 com.joonwon. All rights reserved.
-//
-
 import Foundation
- 
+// 데이터를 파일형태로 앱 내 디스크에 써줄 객체
+
 public class Storage {
     
     private init() { }
