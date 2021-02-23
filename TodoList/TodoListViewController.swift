@@ -1,10 +1,4 @@
-//
-//  TodoListViewController.swift
-//  TodoList
-//
-//  Created by joonwon lee on 2020/03/19.
-//  Copyright © 2020 com.joonwon. All rights reserved.
-//
+
 
 import UIKit
 
@@ -18,62 +12,124 @@ class TodoListViewController: UIViewController {
     @IBOutlet weak var addButton: UIButton!
     
     
-    // TODO: TodoViewModel 만들기
-    
+    // TodoViewModel
+    let todoListViewModel = TodoViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // TODO: 키보드 디텍션
+        // 키보드 디텍션 (키보드가 올라가고 내려옴)
+        NotificationCenter.default.addObserver(self, selector: #selector(adjustInputView), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(adjustInputView), name: UIResponder.keyboardWillHideNotification, object: nil)
+        
+        // 디스크에 있는 데이터 불러오기
+        todoListViewModel.loadTasks()
         
         
-        // TODO: 데이터 불러오기
+//        let todo = TodoManager.shared.createTodo(detail: "히히호호", isToday: true)
+//        Storage.saveTodo(todo, fileName: "test.json")
+//
+    }
+//    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
+//        let todo = Storage.restoreTodo("test.json")
+//        print("---> \(todo)")
     }
     
     @IBAction func isTodayButtonTapped(_ sender: Any) {
-        // TODO: 투데이 버튼 토글 작업
-        
+        // 투데이 버튼 토글 작업
+        isTodayButton.isSelected = !isTodayButton.isSelected
+         
     }
     
     @IBAction func addTaskButtonTapped(_ sender: Any) {
-        // TODO: Todo 태스크 추가
+        // Todo 태스크 추가
         // add task to view model
         // and tableview reload or update
+        
+        guard let detail = inputTextField.text, detail.isEmpty == false else { return }
+        let todo = TodoManager.shared.createTodo(detail: detail, isToday: isTodayButton.isSelected)
+        todoListViewModel.addTodo(todo)
+        collectionView.reloadData()
+        inputTextField.text = ""
+        isTodayButton.isSelected = false
     }
     
-    // TODO: BG 탭했을때, 키보드 내려오게 하기
+    // 화면(백그라운드) 탭했을때, 키보드 내려오게 하기
+    @IBAction func tapBG(_ sender: Any) {
+        inputTextField.resignFirstResponder()
+    }
+    
 }
 
 extension TodoListViewController {
     @objc private func adjustInputView(noti: Notification) {
         guard let userInfo = noti.userInfo else { return }
-        // TODO: 키보드 높이에 따른 인풋뷰 위치 변경
         
+        // 키보드 높이에 따른 인풋뷰 위치 변경
+ 
+        // 키보드 프레임 정보(위치,사이즈)userInfo
+        guard let keyboardFrame = (userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else { return }
+        
+        if noti.name == UIResponder.keyboardWillShowNotification {// 키보드가 올라옴
+            // safeAreaInsets : 노치에 해당하는 부분
+            let adjustmentHeight = keyboardFrame.height - view.safeAreaInsets.bottom
+            inputViewBottom.constant = adjustmentHeight
+        } else {
+            inputViewBottom.constant = 0
+        }
     }
 }
 
 extension TodoListViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        // TODO: 섹션 몇개
-        return 0
+        //  섹션 몇개
+        return todoListViewModel.numOfSection
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // TODO: 섹션별 아이템 몇개
-        return 0
+        // 섹션별 아이템 몇개
+        
+        if section == 0 {//today
+            return todoListViewModel.todayTodos.count
+        }else{
+            return todoListViewModel.upcompingTodos.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        // TODO: 커스텀 셀
+        
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TodoListCell", for: indexPath) as? TodoListCell else {
             return UICollectionViewCell()
         }
-        return cell
         
-        // TODO: todo 를 이용해서 updateUI
-        // TODO: doneButtonHandler 작성
-        // TODO: deleteButtonHandler 작성
+        // 커스텀 셀
+        var todo: Todo
+        if indexPath.section == 0 {
+            todo = todoListViewModel.todayTodos[indexPath.item]
+        } else {
+            todo = todoListViewModel.upcompingTodos[indexPath.item]
+        }
+        cell.updateUI(todo: todo)// todo 를 이용해서 updateUI
+        
+        
+        
+        // doneButtonHandler 작성
+        cell.doneButtonTapHandler = { isDone in
+            todo.isDone = isDone
+            self.todoListViewModel.updateTodo(todo)
+            self.collectionView.reloadData()
+        }
+
+        // deleteButtonHandler 작성
+        cell.deleteButtonTapHandler = {
+            self.todoListViewModel.deleteTodo(todo)
+            self.collectionView.reloadData()
+        }
+        
+        
         return cell
     }
     
@@ -98,8 +154,10 @@ extension TodoListViewController: UICollectionViewDataSource {
 
 extension TodoListViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // TODO: 사이즈 계산하기
-        return CGSize.zero
+        // 사이즈 계산하기
+        let width: CGFloat = collectionView.bounds.width
+        let height: CGFloat = 50
+        return CGSize(width: width, height: height)
     }
 }
 
@@ -108,8 +166,8 @@ class TodoListCell: UICollectionViewCell {
     @IBOutlet weak var checkButton: UIButton!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var deleteButton: UIButton!
+    // strikeThroughView: task 완료했을 때 선 = 크기 1짜리 뷰 셀
     @IBOutlet weak var strikeThroughView: UIView!
-    
     @IBOutlet weak var strikeThroughWidth: NSLayoutConstraint!
     
     var doneButtonTapHandler: ((Bool) -> Void)?
@@ -126,7 +184,7 @@ class TodoListCell: UICollectionViewCell {
     }
     
     func updateUI(todo: Todo) {
-        // TODO: 셀 업데이트 하기
+        // 셀 업데이트 하기
         checkButton.isSelected = todo.isDone
         descriptionLabel.text = todo.detail
         descriptionLabel.alpha = todo.isDone ? 0.2 : 1
@@ -135,6 +193,7 @@ class TodoListCell: UICollectionViewCell {
     }
     
     private func showStrikeThrough(_ show: Bool) {
+        // task 완료했을 때 찍 긋는 선의 width = 0 -> 안보임 = 완료x, width = 가로길이 = 완료
         if show {
             strikeThroughWidth.constant = descriptionLabel.bounds.width
         } else {
@@ -143,19 +202,29 @@ class TodoListCell: UICollectionViewCell {
     }
     
     func reset() {
-        // TODO: reset로직 구현
+        // 각 셀이 재사용 되기 때문에 isSelected 같은 값들을 초기값으로 바꾸는 것이 필요
         
+        // reset로직 구현
+        descriptionLabel.alpha = 1
+        deleteButton.isHidden = true
+        showStrikeThrough(false)
     }
     
     @IBAction func checkButtonTapped(_ sender: Any) {
-        // TODO: checkButton 처리
+        // checkButton 처리
+        // 뷰 업데이트
+        checkButton.isSelected = !checkButton.isSelected
+        let isDone = checkButton.isSelected
+        showStrikeThrough(isDone)
+        descriptionLabel.alpha = isDone ? 0.2 : 1
+        deleteButton.isHidden = !isDone
         
-
+        doneButtonTapHandler?(isDone) // 데이터 업데이트
     }
     
     @IBAction func deleteButtonTapped(_ sender: Any) {
-        // TODO: deleteButton 처리 
-        deleteButtonTapHandler?()
+        // deleteButton 처리
+        deleteButtonTapHandler?() // 데이터 업데이트, 뷰 업데이트
     }
 }
 
