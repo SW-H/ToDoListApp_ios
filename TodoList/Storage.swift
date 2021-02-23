@@ -1,7 +1,15 @@
 import Foundation
-// 데이터를 파일형태로 앱 내 디스크에 써줄 객체
 
-public class Storage {
+
+// let json:[String:Any]
+// json은 dictionary 형태로 저장
+// codable->json을 parsing이 필요 x
+
+// struct가 codable 프로토콜을 따르면 쉽게 json으로 바꾸거나(struct의 property명을 json의 key값으로 매핑)
+// json을 struct로 바꿀 수 있음
+
+
+public class Storage { // 데이터를 파일형태로 앱 내 디스크에 써줄 객체 
     
     private init() { }
     
