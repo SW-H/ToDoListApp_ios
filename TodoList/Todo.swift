@@ -10,14 +10,19 @@ struct Todo: Codable, Equatable {
     var detail: String
     var isToday: Bool
     
-    mutating func update(isDone: Bool, detail: String, isToday: Bool) {
-        // TODO: update 로직 추가
+    mutating func update(isDone: Bool, detail: String, isToday: Bool) { //mutating->자기 자신의 property를 변경함
+        // update 로직 추가
+        self.isDone = isDone
+        self.detail = detail
+        self.isToday = isToday
         
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool {
-        // TODO: 동등 조건 추가
-        return true
+        // todo 를 업데이트 할때 여러 리스트중 어느 객체를 수정할지 확인을 위함 (동등한지 확인하기 위한 구분자:id) <- Equatable 프로토콜 준수
+        
+        // 동등 조건 추가
+        return lhs.id == rhs.id
     }
 }
 
@@ -60,7 +65,7 @@ class TodoManager {
     }
 }
 
-class TodoViewModel {
+class TodoViewModel { // TodoManager를 이용
     
     enum Section: Int, CaseIterable {
         case today

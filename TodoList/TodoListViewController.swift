@@ -49,13 +49,13 @@ extension TodoListViewController {
 
 extension TodoListViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        // TODO: 섹션 몇개
-        return 0
+        // TODO: 섹션 몇게
+        return 2
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // TODO: 섹션별 아이템 몇개
-        return 0
+        return 10
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -92,8 +92,10 @@ extension TodoListViewController: UICollectionViewDataSource {
 
 extension TodoListViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // TODO: 사이즈 계산하기
-        return CGSize.zero
+        // 사이즈 계산하기
+        let width : CGFloat = collectionView.bounds.width
+        let height :CGFloat = 50
+        return CGSize(width: width, height: height)
     }
 }
 
@@ -102,8 +104,7 @@ class TodoListCell: UICollectionViewCell {
     @IBOutlet weak var checkButton: UIButton!
     @IBOutlet weak var descriptionLabel: UILabel!
     @IBOutlet weak var deleteButton: UIButton!
-    @IBOutlet weak var strikeThroughView: UIView!
-    
+    @IBOutlet weak var strikeThroughView: UIView! // strikeThroughView: task 완료했을 때 선 = 크기 1짜리 뷰 셀
     @IBOutlet weak var strikeThroughWidth: NSLayoutConstraint!
     
     var doneButtonTapHandler: ((Bool) -> Void)?
@@ -128,7 +129,7 @@ class TodoListCell: UICollectionViewCell {
         showStrikeThrough(todo.isDone)
     }
     
-    private func showStrikeThrough(_ show: Bool) {
+    private func showStrikeThrough(_ show: Bool) { // task 완료했을 때 찍 긋는 선의 width = 0 -> 안보임 = 완료x, width = 가로길이 = 완료
         if show {
             strikeThroughWidth.constant = descriptionLabel.bounds.width
         } else {
