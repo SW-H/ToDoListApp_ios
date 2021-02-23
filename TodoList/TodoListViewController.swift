@@ -12,8 +12,8 @@ class TodoListViewController: UIViewController {
     @IBOutlet weak var addButton: UIButton!
     
     
-    // TODO: TodoViewModel 만들기
-    
+    // TodoViewModel
+    let todoListViewModel = TodoViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,7 +21,8 @@ class TodoListViewController: UIViewController {
         // TODO: 키보드 디텍션
         
         
-        // TODO: 데이터 불러오기
+        // 디스크에 있는 데이터 불러오기
+        todoListViewModel.loadTasks()
         
     }
     
@@ -49,23 +50,39 @@ extension TodoListViewController {
 
 extension TodoListViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        // TODO: 섹션 몇게
-        return 2
+        //  섹션 몇개
+        return todoListViewModel.numOfSection
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // TODO: 섹션별 아이템 몇개
-        return 10
+        // 섹션별 아이템 몇개
+        
+        if section == 0 {//today
+            return todoListViewModel.todayTodos.count
+        }else{
+            return todoListViewModel.upcompingTodos.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        // TODO: 커스텀 셀
+        
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TodoListCell", for: indexPath) as? TodoListCell else {
             return UICollectionViewCell()
         }
         return cell
         
-        // TODO: todo 를 이용해서 updateUI
+        
+        // 커스텀 셀
+        var todo : Todo
+        if indexPath.section == 0 {
+            todo = todoListViewModel.todayTodos[indexPath.item]
+        } else{
+            todo = todoListViewModel.upcompingTodos[indexPath.item]
+        }
+        cell.updateUI(todo: todo)// todo 를 이용해서 updateUI
+        
+        
+        
         // TODO: doneButtonHandler 작성
         // TODO: deleteButtonHandler 작성
         return cell

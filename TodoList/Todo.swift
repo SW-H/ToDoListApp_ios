@@ -28,32 +28,49 @@ struct Todo: Codable, Equatable {
 
 class TodoManager {
     
-    static let shared = TodoManager()
+    static let shared = TodoManager() // 싱글톤 객체 - 앱 내에서 한개의 객체만 있으면 되고, 이곳저곳에서 불려서 사용됨
     
     static var lastId: Int = 0
     
     var todos: [Todo] = []
     
     func createTodo(detail: String, isToday: Bool) -> Todo {
-        //TODO: create로직 추가
-        return Todo(id: 1, isDone: false, detail: "2", isToday: true)
+        // create로직 추가
+        let nextId = TodoManager.lastId + 1
+        TodoManager.lastId = nextId
+        return Todo(id: nextId, isDone: false, detail: detail, isToday: isToday)
     }
     
     func addTodo(_ todo: Todo) {
-        //TODO: add로직 추가
+        // add로직 추가
+        todos.append(todo)
+        saveTodo()
     }
     
     func deleteTodo(_ todo: Todo) {
-        //TODO: delete 로직 추가
+        // delete 로직 추가
         
+        // (1)
+//        todos = todos.filter { existingTodo in
+//            return existingTodo.id != todo.id
+//        }
+        
+        // (2)
+        // 해당 인덱스를 찾음
+        if let index = todos.firstIndex(of: todo){
+            todos.remove(at: index)
+        }
+        saveTodo()
     }
     
     func updateTodo(_ todo: Todo) {
-        //TODO: updatee 로직 추가
-        
+        //TODO: update 로직 추가
+        guard let index = todos.firstIndex(of: todo) else {return}
+        todos[index].update(isDone: todo.isDone, detail: todo.detail, isToday: todo.isToday)
+        saveTodo()
     }
     
-    func saveTodo() {
+    func saveTodo() { // 디스크에 정보 저장
         Storage.store(todos, to: .documents, as: "todos.json")
     }
     
@@ -65,7 +82,7 @@ class TodoManager {
     }
 }
 
-class TodoViewModel { // TodoManager를 이용
+class TodoViewModel { // TodoManager를 이용, view model 은 view controller(페이지)에서 사용
     
     enum Section: Int, CaseIterable {
         case today
